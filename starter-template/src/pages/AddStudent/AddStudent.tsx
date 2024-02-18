@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { addStudent, getStudent } from "apis/students.api";
+import { addStudent, getStudent, updateStudent } from "apis/students.api";
 import { useEffect, useMemo, useState } from "react";
 import { useMatch, useParams } from "react-router-dom"
 import { Student } from "types/students.type";
@@ -39,12 +39,16 @@ export default function AddStudent() {
     },
     enabled: params.id !== undefined
   })
+
+  const updateStudentMutation = useMutation({
+    mutationFn: (_) => updateStudent(params.id as string, formState as Student)
+  })
   useEffect(() => {
     if (studentQuery.data) {
       setFormState(studentQuery.data.data);
     }
   }, [studentQuery.data])
-  
+
   const isAddMode = Boolean(addMatch);
   const addStudentMutation = useMutation({
     mutationFn: (body: FormStateType) => {
@@ -60,31 +64,13 @@ export default function AddStudent() {
     }
   }
 
-  // const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault()
-  //   if (isAddMode) {
-  //     addStudentMutation.mutate(formState, {
-  //       onSuccess: () => {
-  //         setFormState(initialFormState)
-  //         toast.success('Add thành công!')
-  //       }
-  //     })
-  //   } else {
-  //     // updateStudentMutation.mutate(undefined, {
-  //     //   onSuccess: (_) => {
-  //     //     toast.success('Update thành công!')
-  //     //   }
-  //     // })
-  //   }
-  // }
-
   const errorForm: FormError = useMemo(() => {
-    const error = isAddMode ? addStudentMutation.error : null// updateStudentMutation.error
+    const error = isAddMode ? addStudentMutation.error : updateStudentMutation.error
     if (isAxiosError<{ error: FormError }>(error) && error.response?.status === 422) {
       return error.response?.data.error
     }
     return null
-  }, [addStudentMutation.error])
+  }, [addStudentMutation.error, isAddMode, updateStudentMutation.error])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -93,6 +79,12 @@ export default function AddStudent() {
         onSuccess: (a) => {
           setFormState(initialFormState);
           toast.success('Add thành công!')
+        }
+      })
+    } else {
+      updateStudentMutation.mutate(undefined, {
+        onSuccess: () => {
+          toast.success('Update thành công!')
         }
       })
     }
@@ -118,7 +110,12 @@ export default function AddStudent() {
           >
             Email address
           </label>
-          
+          {errorForm && (
+            <p className='mt-2 text-sm text-red-600'>
+              <span className='font-medium'>Lỗi! </span>
+              {errorForm.email}
+            </p>
+          )}
         </div>
 
         <div className='group relative z-0 mb-6 w-full'>
@@ -268,7 +265,7 @@ export default function AddStudent() {
           type='submit'
           className='w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:w-auto'
         >
-          Submit
+          {isAddMode ? 'Add' : 'Update'}
         </button>
       </form>
     </div>
