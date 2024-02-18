@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addStudent, getStudent, updateStudent } from "apis/students.api";
 import { useEffect, useMemo, useState } from "react";
 import { useMatch, useParams } from "react-router-dom"
@@ -29,6 +29,7 @@ type FormError =
   | null
 
 export default function AddStudent() {
+  const queryClient = useQueryClient();
   const [formState, setFormState] = useState<FormStateType>(initialFormState)
   const addMatch = useMatch('/students/add');
   const params = useParams();
@@ -41,8 +42,12 @@ export default function AddStudent() {
   })
 
   const updateStudentMutation = useMutation({
-    mutationFn: (_) => updateStudent(params.id as string, formState as Student)
+    mutationFn: (_) => updateStudent(params.id as string, formState as Student),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['student', params.id], data)
+    }
   })
+
   useEffect(() => {
     if (studentQuery.data) {
       setFormState(studentQuery.data.data);
