@@ -7,7 +7,11 @@ import Students from 'pages/Students'
 import { useRoutes } from 'react-router-dom'
 import 'react-toastify/dist/ReactToastify.css'
 import { ToastContainer } from 'react-toastify'
+import { useIsFetching, useIsMutating } from '@tanstack/react-query'
+import Spinner from 'components/Spinner'
 function App() {
+  const isFetching = useIsFetching()
+  const isMutating = useIsMutating()
   const elements = useRoutes([
     {
       path: '/',
@@ -37,6 +41,7 @@ function App() {
 
   return (
     <div className='App'>
+      {isFetching + isMutating !== 0 && <Spinner />}
       <ToastContainer />
       <MainLayout>{elements}</MainLayout>
     </div>
