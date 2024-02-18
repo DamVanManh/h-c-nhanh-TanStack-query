@@ -27,9 +27,14 @@ export default function Students() {
 
   const studentsQuery = useQuery({
     queryKey: ['students', page],
-    queryFn: () => getStudents(page, LIMIT),
-    staleTime: 3000,
-    placeholderData: keepPreviousData
+    queryFn: () => {
+      const controller = new AbortController()
+      setTimeout(() => {
+        controller.abort()
+      }, 5000)
+      return getStudents(page, LIMIT, controller.signal)
+    },
+    retry: 0
   })
 
   const deleteStudentMutation = useMutation({
