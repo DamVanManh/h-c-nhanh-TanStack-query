@@ -1,7 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
-import { addStudent } from "apis/students.api";
-import { useMemo, useState } from "react";
-import { useMatch } from "react-router-dom"
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { addStudent, getStudent } from "apis/students.api";
+import { useEffect, useMemo, useState } from "react";
+import { useMatch, useParams } from "react-router-dom"
 import { Student } from "types/students.type";
 import { toast } from 'react-toastify'
 import { isAxiosError } from "utils/utils";
@@ -31,6 +31,20 @@ type FormError =
 export default function AddStudent() {
   const [formState, setFormState] = useState<FormStateType>(initialFormState)
   const addMatch = useMatch('/students/add');
+  const params = useParams();
+  const studentQuery = useQuery({
+    queryKey: ['student', params.id],
+    queryFn: () => {
+      return getStudent(params.id as string);
+    },
+    enabled: params.id !== undefined
+  })
+  useEffect(() => {
+    if (studentQuery.data) {
+      setFormState(studentQuery.data.data);
+    }
+  }, [studentQuery.data])
+  
   const isAddMode = Boolean(addMatch);
   const addStudentMutation = useMutation({
     mutationFn: (body: FormStateType) => {
