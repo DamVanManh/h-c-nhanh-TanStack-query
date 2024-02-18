@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData, useMutation } from '@tanstack/react-query'
+import { useQuery, keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query'
 import { deleteStudent, getStudents } from 'apis/students.api'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -21,6 +21,7 @@ export default function Students() {
   //     })
   // }, [])
 
+  const queryClient = useQueryClient();
   const queryString: { page?: string } = useQueryString()
   const page = Number(queryString.page) || 1
 
@@ -38,7 +39,8 @@ export default function Students() {
   const handleDeleteStudent = (id: number) => {
     deleteStudentMutation.mutate(id, {
       onSuccess: (_, variable) => {
-        toast.success(`Xóa thành công student với id ${variable}`)
+        toast.success(`Xóa thành công student với id ${variable}`);
+        queryClient.invalidateQueries({queryKey: ['students', page], exact: true})
       }
     })
   }
