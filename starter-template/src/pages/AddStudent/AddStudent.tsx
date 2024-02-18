@@ -34,11 +34,12 @@ export default function AddStudent() {
   const addMatch = useMatch('/students/add');
   const params = useParams();
   const studentQuery = useQuery({
-    queryKey: ['student', params.id],
-    queryFn: () => {
-      return getStudent(params.id as string);
-    },
-    enabled: params.id !== undefined
+  queryKey: ['student', params.id],
+  queryFn: () => {
+    return getStudent(params.id as string);
+  },
+  enabled: params.id !== undefined,
+  staleTime: 1000 * 10
   })
 
   const updateStudentMutation = useMutation({

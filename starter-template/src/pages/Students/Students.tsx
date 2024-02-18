@@ -1,5 +1,5 @@
 import { useQuery, keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query'
-import { deleteStudent, getStudents } from 'apis/students.api'
+import { deleteStudent, getStudent, getStudents } from 'apis/students.api'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Students as StudentsType } from 'types/students.type'
@@ -46,6 +46,14 @@ export default function Students() {
   }
   const totalStudentsCount = Number(studentsQuery.data?.headers['x-total-count'] || 0)
   const totalPage = Math.ceil(totalStudentsCount / LIMIT)
+
+  const handlePreFetchStudent = (id: number) => {
+    queryClient.prefetchQuery({
+      queryKey: ['student', String(id)],
+      queryFn: () => getStudent(id),
+      staleTime: 3000,
+    })
+  }
 
   return (
     <div>
@@ -104,6 +112,7 @@ export default function Students() {
                   <tr
                     key={s.id}
                     className='border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600'
+                    onMouseEnter={() => handlePreFetchStudent(s.id)}
                   >
                     <td className='px-6 py-4'>{s.id}</td>
                     <td className='px-6 py-4'>
